@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 from . import views
-from .views import static_template_view, about_us_view, contact_us_view
+from .views import static_template_view, about_us_view, contact_us_view, login_view, logout_view, signup_view
 
 app_name = 'djangoapp'
 urlpatterns = [
@@ -20,10 +20,13 @@ urlpatterns = [
     path('contact/', contact_us_view, name='contact_us'),
 
     # path for registration
+    path('signup/', signup_view, name='signup'),
 
     # path for login
+    path('login/', login_view, name='login'),
 
     # path for logout
+    path('logout/', logout_view, name='logout'),
 
     path(route='', view=views.get_dealerships, name='index'),
 
