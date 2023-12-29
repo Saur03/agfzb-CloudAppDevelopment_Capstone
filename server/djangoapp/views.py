@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
+from django.contrib.auth.forms import UserCreationForm
 import logging
 import json
 
@@ -30,15 +31,41 @@ def contact_us_view(request):
     return render(request, 'djangoapp/contact.html')
 
 # Create a `login_request` view to handle sign in request
-# def login_request(request):
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Successfully logged in.')
+            return redirect('index')  # Replace 'index' with the name of your home page URL
+        else:
+            messages.error(request, 'Invalid username or password.')
+
+    return render(request, 'djangoapp/index.html') 
 # ...
 
 # Create a `logout_request` view to handle sign out request
-# def logout_request(request):
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'Successfully logged out.')
+    return redirect('index')
 # ...
 
 # Create a `registration_request` view to handle sign up request
-# def registration_request(request):
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('index')  # Redirect to the desired page after signup
+    else:
+        form = UserCreationForm()
+    
+    return render(request, 'djangoapp/registration.html', {'form': form})
 # ...
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
@@ -55,6 +82,4 @@ def get_dealerships(request):
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
 # ...
-
-
 
