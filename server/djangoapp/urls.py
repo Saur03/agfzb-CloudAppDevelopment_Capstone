@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 from . import views
 from .views import static_template_view, about_us_view, contact_us_view, login_view, logout_view, signup_view
+from .views import get_dealerships
 
 app_name = 'djangoapp'
 urlpatterns = [
@@ -30,8 +31,17 @@ urlpatterns = [
 
     path(route='', view=views.get_dealerships, name='index'),
 
+    path('get_dealerships/', get_dealerships, name='get_dealerships'),
+
+    path('dealer/<int:dealer_id>/', views.get_dealer_details, name='dealer_details'),
+
+
     # path for dealer reviews view
 
+
     # path for add a review view
+    path('dealer/<int:dealer_id>/add_review/', views.add_review, name='add_review')
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
