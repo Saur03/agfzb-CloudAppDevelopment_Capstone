@@ -30,6 +30,7 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
 
     path(route='', view=views.get_dealerships, name='index'),
+    
 
     path('get_dealerships/', get_dealerships, name='get_dealerships'),
 
@@ -44,4 +45,6 @@ urlpatterns = [
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
 
