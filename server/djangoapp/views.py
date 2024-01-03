@@ -73,62 +73,91 @@ def signup_view(request):
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
-    context = {}
     if request.method == "GET":
+        url = "https://us-south.functions.appdomain.cloud/api/v1/web/7aa8825a-d560-42e5-9f7c-8fbeea4a7ebb/dealership-package/get-dealership"
+        # Get dealers from the URL
+        dealerships = get_dealers_from_cf(url)
+        # Create a context dictionary
+        context = {'dealership_list': dealerships}
+        # Return the render response with the context
         return render(request, 'djangoapp/index.html', context)
-
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
 # def get_dealer_details(request, dealer_id):
 # ...
 def get_dealer_details(request, dealer_id):
-    if request.method == "GET":
-        url = "your-cloud-function-domain/reviews/review-get"
-        api_key = "your_watson_nlu_api_key"  # Replace with your actual Watson NLU API key
+    context = {}
 
-        # Get reviews from the URL
-        dealer_reviews = get_dealer_reviews_from_cf(url, dealer_id, api_key)
+    # Get reviews for the specific dealer
+    url = " https://us-south.functions.appdomain.cloud/api/v1/web/7aa8825a-d560-42e5-9f7c-8fbeea4a7ebb/reviews/reviewget"
+    api_key = "your_watson_nlu_api_key"  # Replace with your actual Watson NLU API key
+    dealer_reviews = get_dealer_reviews_from_cf(url, dealer_id, api_key)
 
-        # Print details for each review, including sentiment
-        for review in dealer_reviews:
-            print(f"Review: {review.review}")
-            print(f"Sentiment: {review.sentiment}")
-            print("-" * 30)
+    # Add reviews to the context
+    context['reviews'] = dealer_reviews
 
-        # Return a response (you can customize this part based on your needs)
-        return HttpResponse("Reviews and Sentiments Printed in Console")
+    return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
 # ...
 def add_review(request, dealer_id):
+    # Cloud function URL for cars
+    cars_url = "your-cloud-function-domain/cars/car-get"
+    
     # Check if the request method is POST
     if request.method == "POST":
-        url = "your-cloud-function-domain/reviews/review-post"
-        api_key = "your_watson_nlu_api_key"  # Replace with your actual Watson NLU API key
-
-        # Create a dictionary object for the review
-        review = {
+        # Get values from the review form
+        content = request.POST.get('content')
+        purchase_check = request.POST.get('purchasecheck')
+        car_id = request.POST.get('car')
+        purchase_date_str = request.POST.get('purchasedate')
+        
+        # Convert purchase_date to a datetime object
+        purchase_date = datetime.strptime(purchase_date_str, "%m/%d/%Y").date()
+        
+        # Get car details from the car id
+        car_url = f"your-cloud-function-domain/cars/car-get/{car_id}"
+        car = post_request(car_url)
+        
+        # Prepare review data
+        review_data = {
             "time": datetime.utcnow().isoformat(),
-            "name": request.user.username,  # Assuming the username is used as the reviewer's name
+            "name": request.user.username,
             "dealership": dealer_id,
-            "review": request.POST.get("review", ""),  # You can customize this based on your form fields
-            "purchase": bool(request.POST.get("purchase", False)),  # Example: a checkbox indicating purchase
-            # Add other attributes based on your review-post cloud function
+            "review": content,
+            "purchase": purchase_date.year if purchase_check else None,
+            "car_make": car["make"]["name"],
+            "car_model": car["name"],
+            "car_year": car["year"],
+            "sentiment": None,  # You can update this with Watson NLU sentiment later
         }
-
-        # Create a JSON payload with the review
-        json_payload = {"review": review}
-
-        # Make the POST request to add a review
-        response = post_request(url, json_payload, dealerId=dealer_id, api_key=api_key)
-
-        # Return the response (you can customize this part based on your needs)
-        return HttpResponse(f"Review added successfully! Response: {response}")
+        
+        # Prepare payload
+        json_payload = {"review": review_data}
+        
+        # Cloud function URL for review post
+        review_post_url = "your-cloud-function-domain/reviews/review-post"
+        
+        # Post the review data
+        post_request(review_post_url, json_payload)
+        
+        # Redirect to the dealer details page
+        return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
+    
+    elif request.method == "GET":
+        # Query cars with the dealer id to be reviewed
+        cars = get_dealer_cars_from_cf(cars_url, dealer_id)
+        
+        # Append queried cars into context
+        context = {'cars': cars, 'dealer_id': dealer_id}
+        
+        # Render add_review.html
+        return render(request, 'djangoapp/add_review.html', context)
+    
     else:
-        # Handle other HTTP methods (GET, etc.) as needed
+        # Handle other HTTP methods (PUT, DELETE, etc.) as needed
         return HttpResponse("Invalid HTTP method")
-
 
 
         
@@ -142,4 +171,6 @@ def get_dealerships(request):
         dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
         # Return a list of dealer short name
         return HttpResponse(dealer_names)
+
+
 
