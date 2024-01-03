@@ -7,12 +7,44 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 
-    <body>
+<body>
 
-    <!--Add a nav bar here -->
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Dealership Review</a>
+            </div>
+            
+            <!-- Add a link to the add_review view for authenticated users -->
+            {% if user.is_authenticated %}
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url 'djangoapp:add_review' dealer_id=dealer_id %}">Add Review</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </nav>
 
-    <!-- Add reviews as cards -->
+    <!-- Review Cards -->
+    <div class="card-columns">
+        {% for review in reviews %}
+            <div class="card">
+                {% if review.sentiment == 'positive' %}
+                    <img class="card-img-left" src="{{MEDIA_URL}}/emoji/positive.png" alt="Positive Sentiment">
+                {% elif review.sentiment == 'neutral' %}
+                    <img class="card-img-left" src="{{MEDIA_URL}}/emoji/neutral.png" alt="Neutral Sentiment">
+                {% else %}
+                    <img class="card-img-left" src="{{MEDIA_URL}}/emoji/negative.png" alt="Negative Sentiment">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ review.car_make }} {{ review.car_model }} - {{ review.car_year }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ review.reviewer_name }}</h6>
+                    <p class="card-text">{{ review.review_text }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 
-    </body>
+</body>
 
 </html>
