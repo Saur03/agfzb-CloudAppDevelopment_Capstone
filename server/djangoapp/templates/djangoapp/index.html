@@ -48,10 +48,41 @@
     </nav>
 
     <!-- Main Content -->
-    This is the index page of your Django app!
+    <h1 class="mt-5">Dealerships</h1>
+    <table class="table" id="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Dealer Name</th>
+                <th>City</th>
+                <th>Address</th>
+                <th>Zip</th>
+                <th>State</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dealer in dealership_list %}
+                <tr>
+                    <td>{{ dealer.id }}</td>
+                    <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{ dealer.full_name }}</a></td>
+                    <td>{{ dealer.city }}</td>
+                    <td>{{ dealer.address }}</td>
+                    <td>{{ dealer.zip }}</td>
+                    <td>{{ dealer.st }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
     <!-- Add other content as needed -->
+    <!-- JavaScript for Bootstrap Table -->
+    <script>
+        $(function() {
+            $('#table').bootstrapTable();
+        });
+    </script>
 
 </body>
 </html>
+
 
