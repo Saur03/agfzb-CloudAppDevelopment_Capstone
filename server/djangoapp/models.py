@@ -103,3 +103,4 @@ class DealerReview(models.Model):
 
     def __str__(self):
         return f"{self.car_dealer} - {self.reviewer_name}"
+
